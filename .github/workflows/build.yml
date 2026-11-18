@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build APK
 
 on:
   push:
@@ -9,12 +9,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-    - name: Build Android APK
-      uses: kivy/action-kivy@v1
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        app_name: "MyATMApp"
-        spec_file: ""
-        requirements: "kivy"
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev \
+            libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+            pkg-config autoconf libtool libffi-dev libbz2-dev zlib1g-dev
+        pip install --upgrade pip
+        pip install buildozer cython==0.29.36
+
+    - name: Build with Buildozer
+      run: |
+        buildozer -v android debug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: package
+        path: bin/*.apk
