@@ -1,34 +1,32 @@
 [app]
 
-# (str) Title of your application
+# Title of your application
 title = MyATMApp
 
-# (str) Package name
+# Package name
 package.name = myatmapp
 
-# (str) Package domain (needed for android packaging)
+# Package domain
 package.domain = org.atm
 
-# (str) Source files where the kivy app lives
+# Source files to include
 source.dir = .
-
-# (list) Source files to include (let it empty to include all the files)
 source.include_exts = py,png,jpg,kv,atlas
 
-# (list) Application requirements
-# comma separated e.g. requirements = sqlite3,kivy
+# Application version (This is what was missing)
+version = 0.1
+
+# Application requirements
 requirements = python3,kivy
 
-# (str) Supported orientations
+# Supported orientations
 orientation = portrait
 
-# (bool) Indicate if the application should be fullscreen or not
+# Fullscreen mode
 fullscreen = 0
 
-# (list) Permissions
+# Permissions
 android.permissions = INTERNET
 
 [buildozer]
-
-# (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
 log_level = 2
