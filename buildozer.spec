@@ -13,7 +13,7 @@ package.domain = org.atm
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 
-# Application version (This is what was missing)
+# Application version
 version = 0.1
 
 # Application requirements
@@ -27,6 +27,21 @@ fullscreen = 0
 
 # Permissions
 android.permissions = INTERNET
+
+# Target Android API, should be as high as possible
+android.api = 33
+
+# Minimum API your APK will support
+android.minapi = 21
+
+# Android SDK version to use
+android.sdk = 33
+
+# Android NDK version to use
+android.ndk = 25b
+
+# Automatically accept Android SDK licenses
+android.accept_sdk_license = True
 
 [buildozer]
 log_level = 2
