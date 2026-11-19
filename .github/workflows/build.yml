@@ -45,6 +45,11 @@ jobs:
             ~/.buildozer
           key: buildozer-${{ hashFiles('buildozer.spec') }}
 
+      - name: Clean stale libthorvg build if cached
+        run: |
+          rm -rf .buildozer/android/platform/build-arm64-v8a/build/other_builds/libthorvg
+          rm -rf ~/.buildozer/android/platform/build-arm64-v8a/build/other_builds/libthorvg
+
       - name: Build APK with Buildozer
         run: |
           yes | buildozer -v android debug
