@@ -1,80 +1,161 @@
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import NumericProperty, StringProperty
+<WindowManager>:
+    LoginScreen:
+        name: "login"
+    MenuScreen:
+        name: "menu"
+    BalanceScreen:
+        name: "balance"
+    TransactionScreen:
+        name: "transaction"
+    DetailsScreen:
+        name: "details"
 
-# بيانات الحساب التجريبية
-account = {
-    "name": "pycode.hubb",
-    "balance": 75000,
-    "pin": "1111",
-    "type": "savings account"
-}
+<LoginScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 25
+        spacing: 15
 
-# 1. شاشة تسجيل الدخول
-class LoginScreen(Screen):
-    def verify_pin(self, pin_text):
-        if pin_text == account["pin"]:
-            # الانتقال للقائمة الرئيسية إذا كان الرمز صحيحاً
-            self.manager.current = "menu"
-            self.manager.get_screen("menu").update_welcome()
-        else:
-            self.ids.error_label.text = "❌ Invalid PIN! Try again."
+        Label:
+            text: "ATM Login"
+            font_size: "26sp"
+            size_hint_y: None
+            height: "50dp"
 
-# 2. شاشة القائمة الرئيسية
-class MenuScreen(Screen):
-    welcome_text = StringProperty("")
+        TextInput:
+            id: pin_input
+            hint_text: "Enter PIN (1111)"
+            password: True
+            input_filter: "int"
+            multiline: False
+            size_hint_y: None
+            height: "48dp"
 
-    def update_welcome(self):
-        self.welcome_text = f"Welcome, {account['name']}"
+        Button:
+            text: "Login"
+            size_hint_y: None
+            height: "48dp"
+            on_release: root.verify_pin(pin_input.text)
 
-# 3. شاشة عرض الرصيد
-class BalanceScreen(Screen):
-    balance_text = StringProperty("")
+        Label:
+            id: error_label
+            text: ""
+            color: 1, 0.2, 0.2, 1
 
-    def on_enter(self):
-        self.balance_text = f"Your Balance: {account['balance']} DZD"
+<MenuScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 25
+        spacing: 12
 
-# 4. شاشة الإيداع والسحب
-class TransactionScreen(Screen):
-    transaction_type = StringProperty("")
-    message_text = StringProperty("")
+        Label:
+            text: root.welcome_text
+            font_size: "22sp"
 
-    def perform_transaction(self, amount_str):
-        try:
-            amount = int(amount_str)
-            if amount <= 0:
-                self.message_text = "❌ Amount must be > 0"
-                return
+        Button:
+            text: "Check Balance"
+            size_hint_y: None
+            height: "48dp"
+            on_release: app.root.current = "balance"
 
-            if self.transaction_type == "Deposit":
-                account["balance"] += amount
-                self.message_text = f"✅ Deposited successfully!\nNew Balance: {account['balance']}"
-            elif self.transaction_type == "Withdraw":
-                if amount > account["balance"]:
-                    self.message_text = "❌ Insufficient funds!"
-                else:
-                    account["balance"] -= amount
-                    self.message_text = f"💸 Please collect cash!\nNew Balance: {account['balance']}"
-        except ValueError:
-            self.message_text = "❌ Please enter a valid number."
+        Button:
+            text: "Deposit"
+            size_hint_y: None
+            height: "48dp"
+            on_release:
+                app.root.get_screen("transaction").transaction_type = "Deposit"
+                app.root.get_screen("transaction").message_text = ""
+                app.root.current = "transaction"
 
-# 5. شاشة تفاصيل الحساب
-class DetailsScreen(Screen):
-    details_text = StringProperty("")
+        Button:
+            text: "Withdraw"
+            size_hint_y: None
+            height: "48dp"
+            on_release:
+                app.root.get_screen("transaction").transaction_type = "Withdraw"
+                app.root.get_screen("transaction").message_text = ""
+                app.root.current = "transaction"
 
-    def on_enter(self):
-        self.details_text = (f"Name: {account['name']}\n"
-                             f"Balance: {account['balance']} DZD\n"
-                             f"Type: {account['type']}")
+        Button:
+            text: "Account Details"
+            size_hint_y: None
+            height: "48dp"
+            on_release: app.root.current = "details"
 
-# مدير الشاشات العام
-class WindowManager(ScreenManager):
-    pass
+        Button:
+            text: "Logout"
+            size_hint_y: None
+            height: "48dp"
+            on_release:
+                app.root.get_screen("login").ids.pin_input.text = ""
+                app.root.current = "login"
 
-class ATMApp(App):
-    def build(self):
-        return WindowManager()
+<BalanceScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 25
+        spacing: 20
 
-if __name__ == '__main__':
-    ATMApp().run()
+        Label:
+            text: root.balance_text
+            font_size: "24sp"
+
+        Button:
+            text: "Back to Menu"
+            size_hint_y: None
+            height: "48dp"
+            on_release: app.root.current = "menu"
+
+<TransactionScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 25
+        spacing: 15
+
+        Label:
+            text: root.transaction_type + " Cash"
+            font_size: "22sp"
+            size_hint_y: None
+            height: "45dp"
+
+        TextInput:
+            id: amount_input
+            hint_text: "Enter amount"
+            input_filter: "int"
+            multiline: False
+            size_hint_y: None
+            height: "48dp"
+
+        Button:
+            text: "Confirm"
+            size_hint_y: None
+            height: "48dp"
+            on_release: root.perform_transaction(amount_input.text)
+
+        Label:
+            text: root.message_text
+            halign: "center"
+
+        Button:
+            text: "Back to Menu"
+            size_hint_y: None
+            height: "48dp"
+            on_release:
+                amount_input.text = ""
+                app.root.current = "menu"
+
+<DetailsScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 25
+        spacing: 20
+
+        Label:
+            text: root.details_text
+            font_size: "20sp"
+
+        Button:
+            text: "Back to Menu"
+            size_hint_y: None
+            height: "48dp"
+            on_release: app.root.current = "menu"
