@@ -1,7 +1,6 @@
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import NumericProperty, StringProperty
+from kivy.properties import StringProperty
 
 # بيانات الحساب التجريبية
 account = {
@@ -11,15 +10,19 @@ account = {
     "type": "savings account"
 }
 
+
 # 1. شاشة تسجيل الدخول
 class LoginScreen(Screen):
     def verify_pin(self, pin_text):
         if pin_text == account["pin"]:
-            # الانتقال للقائمة الرئيسية إذا كان الرمز صحيحاً
+            if "error_label" in self.ids:
+                self.ids.error_label.text = ""
             self.manager.current = "menu"
             self.manager.get_screen("menu").update_welcome()
         else:
-            self.ids.error_label.text = "❌ Invalid PIN! Try again."
+            if "error_label" in self.ids:
+                self.ids.error_label.text = "❌ Invalid PIN! Try again."
+
 
 # 2. شاشة القائمة الرئيسية
 class MenuScreen(Screen):
@@ -28,12 +31,14 @@ class MenuScreen(Screen):
     def update_welcome(self):
         self.welcome_text = f"Welcome, {account['name']}"
 
+
 # 3. شاشة عرض الرصيد
 class BalanceScreen(Screen):
     balance_text = StringProperty("")
 
     def on_enter(self):
         self.balance_text = f"Your Balance: {account['balance']} DZD"
+
 
 # 4. شاشة الإيداع والسحب
 class TransactionScreen(Screen):
@@ -59,22 +64,28 @@ class TransactionScreen(Screen):
         except ValueError:
             self.message_text = "❌ Please enter a valid number."
 
+
 # 5. شاشة تفاصيل الحساب
 class DetailsScreen(Screen):
     details_text = StringProperty("")
 
     def on_enter(self):
-        self.details_text = (f"Name: {account['name']}\n"
-                             f"Balance: {account['balance']} DZD\n"
-                             f"Type: {account['type']}")
+        self.details_text = (
+            f"Name: {account['name']}\n"
+            f"Balance: {account['balance']} DZD\n"
+            f"Type: {account['type']}"
+        )
+
 
 # مدير الشاشات العام
 class WindowManager(ScreenManager):
     pass
 
+
 class ATMApp(App):
     def build(self):
         return WindowManager()
+
 
 if __name__ == '__main__':
     ATMApp().run()
