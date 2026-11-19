@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATM App</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: 400px;
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+    h1, h2 { margin-top: 0; text-align: center; }
+    .screen { display: none; flex-direction: column; gap: 14px; }
+    .screen.active { display: flex; }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #fff;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px 14px;
+      border: none;
+      border-radius: 10px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    button.secondary { background: #475569; }
+    button.secondary:hover { background: #334155; }
+    .msg { min-height: 24px; text-align: center; white-space: pre-line; font-size: 15px; }
+    .error { color: #f87171; }
+    .success { color: #4ade80; }
+    .info-box {
+      background: #0f172a;
+      padding: 16px;
+      border-radius: 12px;
+      line-height: 1.7;
+      white-space: pre-line;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <!-- 1. شاشة تسجيل الدخول -->
+    <div id="login-screen" class="screen active">
+      <h1>ATM Login</h1>
+      <input id="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN" />
+
+      <button onclick="verifyPin()">Login</button>
+      <div id="error-label" class="msg error"></div>
+    </div>
+
+    <!-- 2. شاشة القائمة الرئيسية -->
+    <div id="menu-screen" class="screen">
+      <h2 id="welcome-text"></h2>
+      <button onclick="showBalance()">Check Balance</button>
+      <button onclick="openTransaction('Deposit')">Deposit</button>
+      <button onclick="openTransaction('Withdraw')">Withdraw</button>
+      <button onclick="showDetails()">Account Details</button>
+      <button class="secondary" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- 3. شاشة عرض الرصيد -->
+    <div id="balance-screen" class="screen">
+      <h2>Balance</h2>
+      <div id="balance-text" class="info-box"></div>
+      <button class="secondary" onclick="goTo('menu-screen')">Back to Menu</button>
+    </div>
+
+    <!-- 4. شاشة الإيداع والسحب -->
+    <div id="transaction-screen" class="screen">
+      <h2 id="tx-title"></h2>
+      <input id="amount-input" type="number" inputmode="numeric" placeholder="Enter amount" />
+      <button onclick="performTransaction()">Confirm</button>
+      <div id="tx-message" class="msg"></div>
+      <button class="secondary" onclick="goTo('menu-screen')">Back to Menu</button>
+    </div>
+
+    <!-- 5. شاشة تفاصيل الحساب -->
+    <div id="details-screen" class="screen">
+      <h2>Account Details</h2>
+      <div id="details-text" class="info-box"></div>
+      <button class="secondary" onclick="goTo('menu-screen')">Back to Menu</button>
+    </div>
+  </div>
+
+  <script>
+    const account = {
+      name: "pycode.hubb",
+      balance: 75000,
+      pin: "1111",
+      type: "savings account"
+    };
+
+    let currentTxType = "";
+
+    function goTo(screenId) {
+      document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
+      document.getElementById(screenId).classList.add("active");
+    }
+
+    function verifyPin() {
+      const pinVal = document.getElementById("pin-input").value.trim();
+      const errEl = document.getElementById("error-label");
+
+      if (pinVal === account.pin) {
+        errEl.textContent = "";
+        document.getElementById("welcome-text").textContent = `Welcome, ${account.name}`;
+        goTo("menu-screen");
+      } else {
+        errEl.textContent = "❌ Invalid PIN! Try again.";
+      }
+    }
+
+    function showBalance() {
+      document.getElementById("balance-text").textContent = `Your Balance: ${account.balance} DZD`;
+      goTo("balance-screen");
+    }
+
+    function openTransaction(type) {
+      currentTxType = type;
+      document.getElementById("tx-title").textContent = `${type} Cash`;
+      document.getElementById("amount-input").value = "";
+      const msgEl = document.getElementById("tx-message");
+      msgEl.textContent = "";
+      msgEl.className = "msg";
+      goTo("transaction-screen");
+    }
+
+    function performTransaction() {
+      const raw = document.getElementById("amount-input").value;
+      const msgEl = document.getElementById("tx-message");
+      const amount = Number(raw);
+
+      if (!raw || !Number.isInteger(amount) || amount <= 0) {
+        msgEl.textContent = "❌ Amount must be > 0";
+        msgEl.className = "msg error";
+        return;
+      }
+
+      if (currentTxType === "Deposit") {
+        account.balance += amount;
+        msgEl.textContent = `✅ Deposited successfully!\nNew Balance: ${account.balance}`;
+        msgEl.className = "msg success";
+      } else if (currentTxType === "Withdraw") {
+        if (amount > account.balance) {
+          msgEl.textContent = "❌ Insufficient funds!";
+          msgEl.className = "msg error";
+        } else {
+          account.balance -= amount;
+          msgEl.textContent = `💸 Please collect cash!\nNew Balance: ${account.balance}`;
+          msgEl.className = "msg success";
+        }
+      }
+    }
+
+    function showDetails() {
+      document.getElementById("details-text").textContent =
+        `Name: ${account.name}\nBalance: ${account.balance} DZD\nType: ${account.type}`;
+      goTo("details-screen");
+    }
+
+    function logout() {
+      document.getElementById("pin-input").value = "";
+      document.getElementById("error-label").textContent = "";
+      goTo("login-screen");
+    }
+  </script>
+</body>
+</html>
