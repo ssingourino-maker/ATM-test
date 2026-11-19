@@ -1,0 +1,6 @@
+{
+  "appId": "com.example.atmapp",
+  "appName": "ATM App",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
